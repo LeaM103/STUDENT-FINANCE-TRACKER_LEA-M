@@ -32,3 +32,5 @@ Tab moves through fields, buttons, and links.
 Enter submits forms.
 
 Optional: Esc can close forms.
+## Demo Video
+Watch a short demo of the app here: [Demo Video](https://www.loom.com/share/afae3b3a29f04416a58c0d176a1dc63d?sid=4a77dd8b-c349-4887-8c0b-ac7c05088e51)
