@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Finance Tracker</title>
+  <style>
+    /* === Basic Layout === */
+    body { font-family: sans-serif; margin: 1rem; background:#fff9f0; color:#3f1f00; }
+    header, footer { background:#d2691e; color:#fff; padding:.5rem; text-align:center; }
+    table { width:100%; border-collapse: collapse; margin-top:1rem;}
+    th, td { border:1px solid #7b3f00; padding:.4rem; text-align:left;}
+    th { background:#7b3f00; color:#fff; }
+    input, button { margin:.25rem; padding:.4rem .7rem; border-radius:.25rem; border:none; }
+    button { background:#7b3f00; color:#fff; cursor:pointer; transition:.3s; }
+    button:hover { background:#d2691e; }
+    a { color:#7b3f00; text-decoration:none; }
+    a:hover { color:#d2691e; text-decoration:underline; }
+    mark { background:#d2691e; color:#fff; }
+    @media (min-width:768px){ body{margin:2rem auto; max-width:800px;} }
+    .skip-link:focus {position:static; display:block;}
+    form { margin-top:1rem; }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header>
+  <h1>Student Finance Tracker</h1>
+</header>
+
+<main id="main-content">
+  <section id="dashboard">
+    <h2>Dashboard</h2>
+    <div id="stats">Records: 0 | Total: 0 RWF</div>
+  </section>
+
+  <section id="records">
+    <h2>Records</h2>
+    <input id="search" placeholder="Search (regex)">
+    <button id="addBtn">Add</button>
+
+    <form id="form" hidden>
+      <input id="desc" placeholder="Description">
+      <input id="amt" placeholder="Amount" type="number" step="0.01">
+      <input id="cat" placeholder="Category">
+      <input id="date" type="date">
+      <button id="saveBtn" type="submit">Save</button>
+    </form>
+
+    <table id="table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<footer>
+    <p> This is simple Finance Tracker that can help you to tracker your income and expenses.</p>
+                <p> It is built using html , css , and javascript. Contact <a href="https://github.com/LeaM103/STUDENT-FINANCE-TRACKER_LEA-M">github</a></p>
+  <small>&copy; 2025 Student Finance Tracker</small>
+</footer>
+
+<script>
+  const tbody = document.querySelector("#table tbody");
+  const form = document.querySelector("#form");
+  const addBtn = document.querySelector("#addBtn");
+  const saveBtn = document.querySelector("#saveBtn");
+  const searchInput = document.querySelector("#search");
+  const desc = document.querySelector("#desc");
+  const amt = document.querySelector("#amt");
+  const cat = document.querySelector("#cat");
+  const date = document.querySelector("#date");
+
+  let data = JSON.parse(localStorage.getItem("financeData") || "[]");
+
+  function saveData() {
+    localStorage.setItem("financeData", JSON.stringify(data));
+  }
+
+  function render(pattern="") {
+    tbody.innerHTML = "";
+    let regex;
+    try { regex = new RegExp(pattern, "i"); } catch { regex = null; }
+
+    data.forEach(r => {
+      let d = r.description;
+      if(regex) d = d.replace(regex, m => `<mark>${m}</mark>`);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${d}</td>
+        <td>${r.amount.toFixed(2)}</td>
+        <td>${r.category}</td>
+        <td>${r.date}</td>
+        <td><button data-id="${r.id}">🗑</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    tbody.querySelectorAll("button").forEach(btn => {
+      btn.onclick = e => {
+        const id = e.target.dataset.id;
+        if(confirm("Delete?")){
+          data = data.filter(r => r.id !== id);
+          saveData();
+          render(searchInput.value);
+        }
+      }
+    });
+
+    updateStats();
+  }
+
+  function updateStats(){
+    const total = data.reduce((sum,r)=>sum+r.amount,0);
+    document.querySelector("#stats").textContent =
+      `Records: ${data.length} | Total: ${total.toFixed(2)} RWF`;
+  }
+
+  addBtn.onclick = () => form.hidden = !form.hidden;
+
+  saveBtn.onclick = e => {
+    e.preventDefault();
+    if(!desc.value || !amt.value || !cat.value || !date.value){
+      return alert("Fill all fields");
+    }
+    const rec = {
+      id: Date.now().toString(),
+      description: desc.value.trim(),
+      amount: parseFloat(amt.value),
+      category: cat.value.trim(),
+      date: date.value
+    };
+    data.push(rec);
+    saveData();
+    render();
+    form.reset();
+    form.hidden = true;
+  }
+
+  searchInput.oninput = () => render(searchInput.value);
+
+  // Initial render
+  render();
+</script>
+
+</body>
+</html>
